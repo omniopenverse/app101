@@ -1,0 +1,107 @@
+services:
+  # API service
+  app101apipy:
+    container_name: app101apipy
+    depends_on:
+      app101postgres:
+        condition: service_healthy
+        required: true
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql://app101:password@app101postgres:5432/app101db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    hostname: app101apipy
+    image: app101/apipy:latest
+    networks:
+      app101_shared_network: null
+    ports:
+      - mode: ingress
+        target: 5000
+        published: 5000
+        protocol: tcp
+    restart: unless-stopped
+  
+  # Web application service
+  app101web:
+    container_name: app101web
+    depends_on:
+      app101apipy:
+        condition: service_started
+        required: true
+      app101postgres:
+        condition: service_healthy
+        required: true
+    environment:
+      API_URL: http://localhost:5000
+    hostname: app101web
+    image: app101/web:latest
+    ports:
+      - mode: ingress
+        target: 80
+        published: 8080
+        protocol: tcp
+    networks:
+      app101_shared_network: null
+    restart: unless-stopped
+  
+  # PostgreSQL database service
+  app101postgres:
+    container_name: app101postgres
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgresdb
+    hostname: app101postgres
+    image: app101/postgres:latest
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready --dbname postgres --username app101postgres
+      timeout: 10s
+      interval: 30s
+      retries: 5
+    ports:
+      - mode: ingress
+        target: 5432
+        published: 5432
+        protocol: tcp
+    networks:
+      app101_shared_network: null
+    restart: unless-stopped
+    shm_size: "134217728"
+    volumes:
+      - type: volume
+        source: app101_postgres_data
+        target: /var/lib/postgresql/data
+        volume: {}
+  
+  # Adminer service for database management
+  adminer:
+    container_name: adminer
+    hostname: adminer
+    image: adminer:5.1.0-standalone
+    networks:
+      app101_shared_network: null
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+
+  # sonarqube:
+
+  # grafana:
+
+  # prometheus:
+
+volumes:
+  app101_postgres_data:
+
+networks:
+  app101_shared_network:
+    name: app101_shared_network
+    external: false
