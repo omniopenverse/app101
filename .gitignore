@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+app101-api-py
+app101-web/
+app101-db/
+
 # C extensions
 *.so
 
