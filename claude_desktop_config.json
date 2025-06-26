@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "app101": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "--network", "app101_shared_network",
+        "-e", "APP101_API",
+        "--user", "mcpuser",
+        "app101/mcpserver:latest"
+      ],
+      "env": {
+        "APP101_API": "http://app101apipy:5000"
+      }
+    },
+    "postgres": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "--network", "app101_shared_network",
+        "-e", "POSTGRES_URL",
+        "mcp/postgres:latest", "$POSTGRES_URL"
+      ],
+      "env": {
+        "POSTGRES_URL": "postgres://postgres:password@app101postgres:5432/app101db"
+      }
+    }
+  }
+}

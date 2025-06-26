@@ -8,10 +8,10 @@
 APP101-API-PY-FOLDER 	= ../app101-api-py
 APP101-WEB-FOLDER    	= ../app101-web
 APP101-DB-FOLDER     	= ../app101-db
-
+APP101-MCP-FOLDER		= ../app101-mcp
 
 # Define the default target
-all: build-api build-web build-db
+all: build-api build-web build-db build-mcp
 
 # Define the build targets for each component
 build-api:
@@ -23,5 +23,8 @@ build-web:
 build-db:
 	@echo "Building DB..."
 	cd $(APP101-DB-FOLDER) && docker compose build
+build-mcp:
+	@echo "Building MCP..."
+	cd $(APP101-MCP-FOLDER) && docker compose build
 
-.PHONY: all build-api build-web build-db
+.PHONY: all build-api build-web build-db build-mcp

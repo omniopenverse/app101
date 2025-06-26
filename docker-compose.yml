@@ -93,6 +93,32 @@ services:
     ports:
       - "8081:8080"
 
+  mcpserver:
+    container_name: mcpserver
+    environment:
+      APP101_API: "http://app101apipy:5000"
+    image: app101/mcpserver:latest
+    hostname: mcpserver
+    ports:
+      - mode: ingress
+        target: 8008
+        published: 8008
+        protocol: tcp
+      - mode: ingress
+        target: 8090
+        published: 8090
+        protocol: tcp
+    restart: unless-stopped
+    user: mcpuser
+
+  mcpinspector:
+    image: mcp/inspector:latest
+    ports:
+      - "5173:5173"
+    container_name: mcpinspector
+    hostname: mcpinspector
+    restart: unless-stopped
+
   # sonarqube:
 
   # grafana:
