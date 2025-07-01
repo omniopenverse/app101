@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "gitlab": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--network=app101_shared_network",
+        "--rm",
+        "app101/mcpgitlab:latest"
+      ]
+    }
+  }
+}
