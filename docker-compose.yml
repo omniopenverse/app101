@@ -99,21 +99,113 @@ services:
 
   # prometheus:
 
-  # jenkins:
+  # jenkins service
+  jenkins:
+    container_name: jenkins
+    build:
+      context: jenkins
+      dockerfile: Dockerfile
+    environment:
+      DOCKER_HOST: tcp://docker:2376 
+      DOCKER_CERT_PATH: /certs/client 
+      DOCKER_TLS_VERIFY: 1 
+    depends_on:
+      - dind
+    hostname: jenkins
+    image: app101/jenkins:latest
+    networks:
+      app101_shared_network: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: 8082
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - jenkins-data:/var/jenkins_home 
+      - jenkins-docker-certs:/certs/client:ro 
+
+  # dind service
+  dind:
+    container_name: dind
+    hostname: dind
+    image: docker:20.10.7-dind
+    privileged: true
+    networks:
+      app101_shared_network: null
+    ports:
+      - mode: ingress
+        target: 2375
+        published: 2375
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home
   
-  # dind:
-
-  # gitlab:
-
+  # gitlab
+  gitlab:
+    build:
+      context: gitlab
+      dockerfile: Dockerfile  
+    container_name: gitlab
+    environment:
+      GITLAB_ROOT_PASSWORD: h0meL@b69
+    hostname: gitlab
+    image: app101/gitlab:latest
+    ports:
+      - 80:80
+      - 443:443
+      - 2222:22
+    networks:
+      app101_shared_network: null
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: gitlab_config
+        target: /etc/gitlab
+        volume: {}
+      - type: volume
+        source: gitlab_data
+        target: /var/opt/gitlab
+        volume: {}
+      - type: volume
+        source: gitlab_logs
+        target: /var/log/gitlab
+        volume: {}
+ 
   # elasticsearch:
 
   # logstash:
 
   # kibana:
 
+  #mcpserver
+  mcpgitlab:
+    build:
+      context: mcpgitlab
+      dockerfile: Dockerfile
+      args:
+        GITLAB_API_URL: http://gitlab/api/v4
+        GITLAB_PERSONAL_ACCESS_TOKEN: ${GITLAB_PERSONAL_ACCESS_TOKEN:?}
+    environment:
+      GITLAB_API_URL: http://gitlab/api/v4
+      GITLAB_PERSONAL_ACCESS_TOKEN: ${GITLAB_PERSONAL_ACCESS_TOKEN:?}
+    image: app101/mcpgitlab:latest
+    networks:
+      app101_shared_network: null
+    container_name: mcpgitlab
+    hostname: mcpgitlab
+    restart: always
+
 
 volumes:
   app101_postgres_data:
+  jenkins-data:
+  jenkins-docker-certs:
+  gitlab_logs:
+  gitlab_data:
+  gitlab_config:
 
 networks:
   app101_shared_network:
