@@ -93,7 +93,42 @@ services:
     ports:
       - "8081:8080"
 
-  # sonarqube:
+  # sonarqube service:
+  sonarqube:
+    build:
+      context: sonarqube
+      dockerfile: Dockerfile
+    container_name: sonarqube
+    depends_on:
+      app101postgres:
+        condition: service_healthy
+        required: true
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://app101postgres:5432/sonarqubedb
+      SONAR_JDBC_USERNAME: sonarqube
+      SONAR_JDBC_PASSWORD: password
+    hostname: sonarqube
+    image: app101/sonarqube:latest
+    networks:
+      app101_shared_network: null
+    ports:
+      - mode: ingress
+        target: 9000
+        published: 9000
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: sonarqube_data
+        target: /opt/sonarqube/data
+        volume: {}
+      - type: volume
+        source: sonarqube_extensions
+        target: /opt/sonarqube/extensions
+        volume: {}
+      - type: volume
+        source: sonarqube_logs
+        target: /opt/sonarqube/logs
 
   # grafana:
 
@@ -143,7 +178,7 @@ services:
       - jenkins-docker-certs:/certs/client
       - jenkins-data:/var/jenkins_home
   
-  # gitlab
+  # gitlab service
   gitlab:
     build:
       context: gitlab
@@ -180,7 +215,7 @@ services:
 
   # kibana:
 
-  #mcpserver
+  #mcpserver service
   mcpgitlab:
     build:
       context: mcpgitlab
@@ -206,6 +241,9 @@ volumes:
   gitlab_logs:
   gitlab_data:
   gitlab_config:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
 
 networks:
   app101_shared_network:
