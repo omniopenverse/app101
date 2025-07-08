@@ -1,0 +1,62 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Scrape the API service (app101apipy)
+  - job_name: 'app101apipy'
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['app101apipy:5000']
+
+  # # Scrape the Web service (app101web)
+  # - job_name: 'app101web'
+  #   metrics_path: /metrics 
+  #   scheme: http
+  #   static_configs:
+  #     - targets: ['app101web:80']
+
+  # # Scrape the PostgreSQL service (app101postgres)
+  # - job_name: 'app101postgres'
+  #   metrics_path: /metrics
+  #   scheme: http
+  #   static_configs:
+  #     - targets: ['app101postgres:5432']
+
+  # Scrape the Jenkins service
+  - job_name: 'jenkins'
+    metrics_path: /prometheus
+    scheme: http
+    static_configs:
+      - targets: ['jenkins:8080']
+
+  # # Scrape the GitLab service
+  # - job_name: 'gitlab'
+  #   metrics_path: /metrics
+  #   scheme: http
+  #   static_configs:
+  #     - targets: ['gitlab:80']
+  # # Scrape the SonarQube service
+  # - job_name: 'sonarqube'
+  #   metrics_path: /metrics
+  #   scheme: http
+  #   static_configs:
+  #     - targets: ['sonarqube:9000']   
+  # Scrape the Grafana service
+  - job_name: 'grafana'
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['grafana:3000'] 
+  # Scrape the Prometheus service itself
+  - job_name: 'prometheus'
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['prometheus:9090']  
+  
+
+
+ 

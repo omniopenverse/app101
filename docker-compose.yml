@@ -131,9 +131,66 @@ services:
         target: /opt/sonarqube/logs
 
   # grafana:
+  grafana:
+    container_name: grafana
+    build:
+      context: grafana
+      dockerfile: Dockerfile
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: password
+      GF_SECURITY_ADMIN_USER: admin
+    hostname: grafana
+    image: app101/grafana:latest
+    networks:
+      app101_shared_network: null
+    ports:
+      - mode: ingress
+        target: 3000
+        published: 3000
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: grafana_data
+        target: /var/lib/grafana
+        volume: {}
+      - type: bind
+        source: grafana/provisioning
+        target: /etc/grafana/provisioning
+        read_only: true
 
   # prometheus:
-
+  prometheus:
+    container_name: prometheus
+    build:
+      context: prometheus
+      dockerfile: Dockerfile
+    environment:
+      UNIVERSE_PROMETHEUS_HOST: http://prometheus:9090
+      UNIVERSE_PROMETHEUS_PORT_9090: 9090
+      USER: prometheus
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:9090/metrics"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 10s
+    hostname: prometheus
+    image: app101/prometheus:latest
+    networks:
+      app101_shared_network: null
+    ports:
+    - mode: ingress
+      target: 9090
+      published: 9090
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: volume
+      source: prometheus_data
+      target: /prometheus
+      volume: {}
+    
   # jenkins service
   jenkins:
     container_name: jenkins
@@ -231,6 +288,8 @@ services:
       app101_shared_network: null
     container_name: mcpgitlab
     hostname: mcpgitlab
+    profiles:
+      - mcpgitlab
     restart: always
 
 
@@ -244,6 +303,10 @@ volumes:
   sonarqube_data:
   sonarqube_extensions:
   sonarqube_logs:
+  grafana_data:
+  prometheus_data:
+  
+  
 
 networks:
   app101_shared_network:

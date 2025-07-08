@@ -23,4 +23,4 @@ github-oauth:latest gitlab-plugin:latest"
 # Install Docker Pipeline plugin
 RUN jenkins-plugin-cli --plugins "docker-workflow:latest"
 # Install Blue Ocean plugins
-RUN jenkins-plugin-cli --plugins "blueocean:latest blueocean-autofavorite:latest"
+RUN jenkins-plugin-cli --plugins "blueocean:latest blueocean-autofavorite:latest prometheus:819.v50953a_c560dd"
