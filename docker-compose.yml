@@ -8,6 +8,7 @@ services:
         required: true
     environment:
       APP_ENV: production
+      APP101_LOG_FILE: /var/log/app101/app.log
       DATABASE_URL: postgresql://app101:password@app101postgres:5432/app101db
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
@@ -25,6 +26,11 @@ services:
         published: 5000
         protocol: tcp
     restart: unless-stopped
+    volumes:
+      - type: volume
+        source: app101_apipy_logs
+        target: /var/log/app101
+        volume: {}
   
   # Web application service
   app101web:
@@ -267,10 +273,109 @@ services:
         volume: {}
  
   # elasticsearch:
+  elasticsearch:
+    build:
+      context: elasticsearch
+      dockerfile: Dockerfile
+    container_name: elasticsearch
+    environment:
+      discovery.type: single-node
+      node.name: ollama-elasticsearch
+      xpack.security.enabled: "false"
+    hostname: elasticsearch
+    image: app101/elasticsearch:latest
+    restart: unless-stopped
+    ports:
+      - mode: ingress
+        target: 9200
+        published: 9200
+        protocol: tcp
+    networks:
+      app101_shared_network: null
+    volumes:
+      - type: volume
+        source: elasticsearch_data
+        target: /usr/share/elasticsearch/data
+        volume: {}
+
+  # filebeat:
+  filebeat:
+    build:
+      context: filebeat
+      dockerfile: Dockerfile
+    container_name: filebeat
+    depends_on:
+      elasticsearch:
+        condition: service_started
+        required: true
+    # environment:
+    #   ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    #   LOGSTASH_HOST: logstash:5044
+    #   KIBANA_HOST: http://kibana:5601
+    hostname: filebeat
+    image: app101/filebeat:latest
+    restart: unless-stopped
+    ports:
+      - mode: ingress
+        target: 5066
+        published: 5066
+        protocol: tcp
+    networks:
+      app101_shared_network: null
+    volumes:
+      - type: volume
+        source: app101_apipy_logs
+        target: /var/log/app101
+        volume: {}
 
   # logstash:
+  logstash:
+    build:
+      context: logstash
+      dockerfile: Dockerfile
+    # command:
+    #   - -f
+    #   - /usr/share/logstash/pipeline/logstash.conf
+    container_name: logstash
+    depends_on:
+      elasticsearch:
+        condition: service_started
+        required: true
+    environment:
+      LS_HEAP_SIZE: 1024m
+    hostname: logstash
+    image: app101/logstash:local
+    restart: unless-stopped
+    ports:
+      - mode: ingress
+        target: 5044
+        published: 5044
+        protocol: tcp
+    networks:
+      app101_shared_network: null
 
   # kibana:
+  kibana:
+    build:
+      context: kibana
+      dockerfile: Dockerfile
+    container_name: kibana
+    depends_on:
+      logstash:
+        condition: service_started
+        required: true
+    environment:
+      KIBANA_ELASTICSEARCH_URL: http://elasticsearch:9200
+    hostname: kibana
+    image: app101/kibana:local
+    restart: unless-stopped
+    ports:
+      - mode: ingress
+        target: 5601
+        published: 5601
+        protocol: tcp
+    networks:
+      app101_shared_network: null
 
   #mcpserver service
   mcpgitlab:
@@ -294,6 +399,7 @@ services:
 
 
 volumes:
+  app101_apipy_logs:
   app101_postgres_data:
   jenkins-data:
   jenkins-docker-certs:
@@ -305,9 +411,8 @@ volumes:
   sonarqube_logs:
   grafana_data:
   prometheus_data:
+  elasticsearch_data:
   
-  
-
 networks:
   app101_shared_network:
     name: app101_shared_network
