@@ -6,3 +6,13 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: false
+  - name: Elasticsearch
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    isDefault: false
+    editable: false
+    jsonData:
+      timeField: "@timestamp"
+      interval: Daily
+      index: "python-app-logs-*"
