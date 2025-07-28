@@ -1,0 +1,1 @@
+FROM omniopenverse/adminstack:1.0.1
