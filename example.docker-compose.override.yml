@@ -1,0 +1,24 @@
+services:
+  # Administrator service: adminstack
+  adminstack:
+    volumes:
+      - type: bind
+        source: ./../app101-api-py
+        target: /home/adminstack/workplace/app101-api-py
+        read_only: false
+      - type: bind
+        source: ./../app101-web
+        target: /home/adminstack/workplace/app101-web
+        read_only: false
+      - type: bind
+        source: ./../app101-helm-charts
+        target: /home/adminstack/workplace/app101-helm-charts
+        read_only: false
+      - type: bind
+        source: ./../app101-db
+        target: /home/adminstack/workplace/app101-db
+        read_only: false
+      - type: bind
+        source: ./../app101-mcp
+        target: /home/adminstack/workplace/app101-mcp
+        read_only: false

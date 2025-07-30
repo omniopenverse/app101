@@ -13,7 +13,7 @@ services:
     volumes:
       - type: bind
         source: .
-        target: /home/adminstack/app101
+        target: /home/adminstack/workplace/app101
         read_only: false
       - type: bind
         source: /var/run/docker.sock
