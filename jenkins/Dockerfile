@@ -11,16 +11,21 @@ RUN apt-get update && apt-get install -y lsb-release ca-certificates curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
     
 USER jenkins
-RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api"
+RUN jenkins-plugin-cli --plugins "blueocean docker-workflow json-path-api docker-plugin"
 # Install Jenkins plugins
 RUN jenkins-plugin-cli --plugins "slack:latest global-slack-notifier:latest \
 kubernetes:latest \
 configuration-as-code:latest \
 credentials:latest \
 git:latest git-client:latest github:latest \
-github-oauth:latest gitlab-plugin:latest"
+github-oauth:latest gitlab-plugin:latest \
+ansicolor:1.0.6"
 
 # Install Docker Pipeline plugin
 RUN jenkins-plugin-cli --plugins "docker-workflow:latest"
 # Install Blue Ocean plugins
 RUN jenkins-plugin-cli --plugins "blueocean:latest blueocean-autofavorite:latest prometheus:819.v50953a_c560dd"
+
+# Copy agent build context and init scripts
+COPY agents /usr/share/jenkins/ref/agents
+COPY init.groovy.d /usr/share/jenkins/ref/init.groovy.d
