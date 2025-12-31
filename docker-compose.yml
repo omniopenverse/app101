@@ -227,11 +227,13 @@ services:
       context: jenkins
       dockerfile: Dockerfile
     environment:
-      DOCKER_HOST: tcp://docker:2376 
+      DOCKER_HOST: tcp://dind:2376 
       DOCKER_CERT_PATH: /certs/client 
       DOCKER_TLS_VERIFY: 1 
     depends_on:
-      - dind
+      dind:
+        condition: service_healthy
+        required: true
     hostname: jenkins
     image: app101/jenkins:latest
     networks:
@@ -244,24 +246,26 @@ services:
     restart: unless-stopped
     volumes:
       - jenkins-data:/var/jenkins_home 
-      - jenkins-docker-certs:/certs/client:ro 
+      - jenkins-docker-certs:/certs:ro 
 
   # dind service
   dind:
     container_name: dind
     hostname: dind
-    image: docker:20.10.7-dind
+    image: docker:27.4-dind
+    environment:
+      DOCKER_TLS_CERTDIR: /certs
     privileged: true
     networks:
       app101_shared_network: null
-    ports:
-      - mode: ingress
-        target: 2375
-        published: 2375
-        protocol: tcp
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /certs/client/ca.pem ] && [ -f /certs/client/cert.pem ] && [ -f /certs/client/key.pem ]"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     restart: unless-stopped
     volumes:
-      - jenkins-docker-certs:/certs/client
+      - jenkins-docker-certs:/certs
       - jenkins-data:/var/jenkins_home
   
   # gitlab service
